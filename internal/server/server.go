@@ -1,50 +1,97 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	url2 "net/url"
 )
 
 const (
-	bitcoin  = "btc"
-	usdt     = "trc20/usdt"
-	litecoin = "itc"
+	email = "acmkantemir@gmail.com"
+
+	Bitcoin  = "btc"
+	USDT     = "bep20/usdt"
+	Litecoin = "itc"
 )
 
-type ReqBody struct {
-	Callback string `json:"callback"`
-	Address  string `json:"address"`
+type RespBody struct {
+	AddressIn   string `json:"address_in"`
+	AddressOut  string `json:"address_out"`
+	CallbackURL string `json:"callback_url"`
+	Priority    string `json:"priority"`
+	Status      string `json:"status"`
 }
 
 var Amount int
 
-func StartServer() {
-	//url := fmt.Sprintf("https://api.cryptapi.io/%d/create/", bitcoin)
-	url1 := "https://api.cryptapi.io/info/"
+func MakeWalletAddress(currency string) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("server: %s /\n", r.Method)
+
+	})
+
+	//3E1DuCVKdfddYg8PrQjMhrgZ3ohv9RcWMU      3Jq9z8vDr8fFjSPQBnHPy3FiQXTVdg4s3N
+
+	server := http.Server{
+		Addr:    ":8887",
+		Handler: mux,
+	}
+
+	go server.ListenAndServe()
+
+	url := fmt.Sprintf("https://api.cryptapi.io/%s/create/", Bitcoin)
 
 	client := http.DefaultClient
 
-	req, err := http.NewRequest(http.MethodGet, url1, nil)
+	params := url2.Values{}
+	params.Add("callback", "http://localhost:8887")
+	params.Add("address", "1HELGKbKdyQCAEYwPVBqMd3xiZgLTqwahT")
+	params.Add("pending", "0")
+	params.Add("confirmations", "1")
+	params.Add("email", "string")
+	params.Add("post", "0")
+	params.Add("priority", "default")
+	params.Add("multi_token", "0")
+	params.Add("multi_chain", "0")
+	params.Add("convert", "0")
+
+	req, err := http.NewRequest(http.MethodGet, url+"?"+params.Encode(), nil)
 	if err != nil {
-		log.Println(err)
+		log.Println(err, 1)
 		return
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		log.Println(err, 2)
+		return
+	}
+	defer resp.Body.Close()
+
+	respbody := RespBody{
+		AddressIn:   "",
+		AddressOut:  "",
+		CallbackURL: "",
+		Priority:    "",
+		Status:      "",
+	}
+
+	respJSON, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err, 3)
+		return
+	}
+	fmt.Println(resp.Status)
+
+	err = json.Unmarshal(respJSON, &respbody)
+	if err != nil {
+		log.Println(err, 4)
 		return
 	}
 
-	fmt.Println(resp.Body)
-}
-
-func MakeWalletAddress(userID int64) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/makeaddress", func(w http.ResponseWriter, r *http.Request) {
-
-	})
-
-	log.Println(http.ListenAndServe("localhost:8080", mux))
+	fmt.Println("Response body:", respbody)
 }
