@@ -2,7 +2,8 @@ package main
 
 import (
 	"github.com/buguzei/market-bot/internal"
-	"github.com/buguzei/market-bot/internal/handlers"
+	"github.com/buguzei/market-bot/internal/bot"
+	"github.com/buguzei/market-bot/internal/server"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"log"
@@ -11,14 +12,15 @@ import (
 
 func main() {
 	err := godotenv.Load("config/.env")
-	handlers.CheckErrWithText(err, "Error loading .env file")
+	internal.CheckErrWithText(err, "Error loading .env file")
 
 	token := os.Getenv("TOKEN")
 
-	bot, err := tgbotapi.NewBotAPI(token)
-	handlers.CheckErr(err)
+	Bot, err := tgbotapi.NewBotAPI(token)
+	internal.CheckErr(err)
 
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Printf("Authorized on account %s", Bot.Self.UserName)
 
-	internal.Start(bot)
+	server.StartServer()
+	bot.StartBot(Bot)
 }
