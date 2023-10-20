@@ -37,7 +37,7 @@ func MakeWalletAddress(currency string) {
 	//3E1DuCVKdfddYg8PrQjMhrgZ3ohv9RcWMU      3Jq9z8vDr8fFjSPQBnHPy3FiQXTVdg4s3N
 
 	server := http.Server{
-		Addr:    ":8887",
+		Addr:    ":8888/address",
 		Handler: mux,
 	}
 
@@ -48,7 +48,7 @@ func MakeWalletAddress(currency string) {
 	client := http.DefaultClient
 
 	params := url2.Values{}
-	params.Add("callback", "http://localhost:8887")
+	params.Add("callback", "http://localhost:8888/address")
 	params.Add("address", "1HELGKbKdyQCAEYwPVBqMd3xiZgLTqwahT")
 	params.Add("pending", "0")
 	params.Add("confirmations", "1")

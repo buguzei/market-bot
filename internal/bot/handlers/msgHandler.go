@@ -23,6 +23,7 @@ func WorkWithMsg(bot *tgbotapi.BotAPI, update tgbotapi.Update, msgID map[int64]i
 			return
 		}
 		server.Amount = intText
+	case "replace/desc":
 
 	default:
 		switch text {
